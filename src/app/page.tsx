@@ -61,7 +61,7 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+    <main className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg text-black">
       <h1 className="text-2xl font-bold text-center mb-4">
         Bienvenido, {user.displayName}
       </h1>
