@@ -57,7 +57,7 @@ export default function Home() {
   };
 
   if (!user) {
-    return <p>Cargando...</p>;
+    return <p>Registrate para poder acortar tu URL</p>;
   }
 
   return (
