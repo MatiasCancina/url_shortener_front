@@ -31,7 +31,7 @@ export const useUrlStore = create<UrlStore>((set) => ({
         loading: false,
       }));
     } catch (error: unknown) {
-      set({ error: "Error al acortar la URL", loading: false });
+      set({ error: (error as Error).message, loading: false });
     }
   },
 }));

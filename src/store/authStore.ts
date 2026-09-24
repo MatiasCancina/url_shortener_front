@@ -42,13 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user }),
 
   logout: async () => {
-    try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
-        withCredentials: true,
-      });
-      set({ user: null });
-    } catch (error: unknown) {
-      console.error("Error logging out:", error);
-    }
+    set({ user: null });
+    window.location.assign(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`);
   },
 }));
