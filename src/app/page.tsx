@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUrlStore } from "@/store/urlStore";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useAuthStore } from "@/store/authStore";
@@ -7,25 +7,10 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [url, setUrl] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const { urls, shortenUrl, loading, error } = useUrlStore();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { user, setUser } = useAuthStore();
   const router = useRouter();
-
-  useEffect(() => {
-    const handleReCaptchaVerify = async () => {
-      if (!executeRecaptcha) {
-        console.log("Execute recaptcha not yet available");
-        return;
-      }
-
-      const token = await executeRecaptcha("homepage");
-      setRecaptchaToken(token);
-    };
-
-    handleReCaptchaVerify();
-  }, [executeRecaptcha]);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -49,11 +34,13 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (url.trim() && recaptchaToken) {
-      await shortenUrl(url, recaptchaToken);
-      setUrl("");
-      setRecaptchaToken(null);
+    if (!url.trim() || !executeRecaptcha) {
+      return;
     }
+
+    const recaptchaToken = await executeRecaptcha("shorten_url");
+    await shortenUrl(url.trim(), recaptchaToken);
+    setUrl("");
   };
 
   if (!user) {
@@ -81,7 +68,7 @@ export default function Home() {
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500"
-          disabled={loading || !recaptchaToken}
+          disabled={loading || !executeRecaptcha}
         >
           {loading ? "Acortando..." : "Acortar"}
         </button>
@@ -92,7 +79,7 @@ export default function Home() {
       <ul className="mt-6 space-y-2">
         {urls.map((u) => (
           <li
-            key={u.id}
+            key={u.shortUrl}
             className="p-2 border rounded-md flex justify-between items-center"
           >
             <span className="truncate max-w-xs">{u.originalUrl}</span>

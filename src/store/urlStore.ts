@@ -11,7 +11,7 @@ interface UrlStore {
   urls: Url[];
   loading: boolean;
   error: string | null;
-  shortenUrl: (originalUrl: string, recaptchaToken: string) => Promise<void>;
+  shortenUrl: (originalUrl: string, captchaToken: string) => Promise<void>;
 }
 
 export const useUrlStore = create<UrlStore>((set) => ({
@@ -19,19 +19,27 @@ export const useUrlStore = create<UrlStore>((set) => ({
   loading: false,
   error: null,
 
-  shortenUrl: async (originalUrl, recaptchaToken) => {
+  shortenUrl: async (originalUrl, captchaToken) => {
     try {
       set({ loading: true, error: null });
       const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/urls/shorten`,
-        { originalUrl, recaptchaToken }
+        { originalUrl, captchaToken }
       );
       set((state) => ({
         urls: [data, ...state.urls],
         loading: false,
       }));
     } catch (error: unknown) {
-      set({ error: (error as Error).message, loading: false });
+      const responseData = axios.isAxiosError(error)
+        ? (error.response?.data as { error?: string; message?: string } | undefined)
+        : undefined;
+      const message = responseData?.error || responseData?.message;
+
+      set({
+        error: message || (error instanceof Error ? error.message : "No se pudo acortar la URL"),
+        loading: false,
+      });
     }
   },
 }));
